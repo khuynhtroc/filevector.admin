@@ -4,6 +4,12 @@ import Dashboard from './pages/Dashboard';
 import ProductManager from './pages/ProductManager';
 import DashboardLayout from './pages/DashboardLayout'; // Import layout mới
 import { ProtectedRoute } from './auth/Auth.jsx';
+import Orders from './pages/Orders';
+import Users from './pages/Users';
+import Memberships from './pages/Memberships';
+import Reports from './pages/Reports';
+
+
 
 function App() {
   return (
@@ -15,9 +21,11 @@ function App() {
       <Route element={<ProtectedRoute />}>
         <Route element={<DashboardLayout />}> {/* Layout làm component cha */}
           <Route path="/" element={<Dashboard />} />
+          <Route path="reports" element={<Reports />} /> {/* Thêm dòng này */}
+          <Route path="orders" element={<Orders />} /> {/* Thêm dòng này */}
           <Route path="products" element={<ProductManager />} />
-          {/* Ví dụ thêm trang quản lý đơn hàng */}
-          {/* <Route path="orders" element={<OrderManager />} /> */}
+          <Route path="users" element={<Users />} /> {/* Thêm dòng này */}
+          <Route path="memberships" element={<Memberships />} /> {/* Thêm dòng này */}
         </Route>
       </Route>
     </Routes>
