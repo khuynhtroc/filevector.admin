@@ -46,12 +46,15 @@ export default function Users() {
                     <TableBody>
                         {users.map((user) => (
                             <TableRow key={user.id} hover>
-                                <TableCell><strong>{user.email}</strong></TableCell>
+                                <TableCell><strong>{user.email || 'Chưa có email'}</strong></TableCell>
                                 <TableCell>{user.full_name || 'Chưa cập nhật'}</TableCell>
                                 <TableCell>
                                     {user.is_admin ? <Chip label="Admin" color="secondary" size="small" /> : <Chip label="User" color="default" size="small" />}
                                 </TableCell>
-                                <TableCell>{new Date(user.created_at).toLocaleDateString('vi-VN')}</TableCell>
+                                <TableCell>
+                                    {/* SỬA LỖI Ở ĐÂY: Kiểm tra user.created_at trước khi định dạng */}
+                                    {user.created_at ? new Date(user.created_at).toLocaleDateString('vi-VN') : 'Không rõ'}
+                                </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
