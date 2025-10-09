@@ -71,7 +71,12 @@ export default function Orders() {
             const { data, error: fetchError } = await supabase
                 .from('orders')
                 .select(`
-                    *, 
+                    id,
+                    created_at,
+                    total_price,
+                    status,
+                    discount,
+                    discount_code,
                     membership_plans ( name ), 
                     profiles ( username, email ) 
                 `)
@@ -129,7 +134,8 @@ export default function Orders() {
 
             alert('Cập nhật thành công!');
             handleCloseModal();
-            fetchOrders(); // Tải lại danh sách đơn hàng để thấy thay đổi
+            // Tải lại danh sách đơn hàng để thấy thay đổi
+            fetchOrders(); 
         } catch (err) {
             alert('Lỗi khi cập nhật: ' + err.message);
         }
@@ -147,6 +153,8 @@ export default function Orders() {
                 return <Chip label="Hoàn thành" color="success" size="small" />;
             case 'pending':
                 return <Chip label="Chờ xử lý" color="warning" size="small" />;
+            case 'failed':
+                return <Chip label="Thất bại" color="error" size="small" />;
             default:
                 return <Chip label={status || 'N/A'} size="small" />;
         }
