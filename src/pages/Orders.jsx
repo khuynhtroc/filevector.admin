@@ -72,26 +72,29 @@ export default function Orders() {
             <Typography variant="h4" gutterBottom>Quản lý Đơn hàng</Typography>
             
             <TableContainer component={Paper}>
-                <Table>
+                <Table sx={{ minWidth: 650 }} aria-label="orders table">
                     <TableHead>
-                        <TableRow>
+                        <TableRow sx={{ '& > th': { fontWeight: 'bold' } }}>
                             <TableCell>Sản phẩm</TableCell>
                             <TableCell>Email Khách hàng</TableCell>
                             <TableCell align="right">Tổng tiền</TableCell>
-                            <TableCell>Trạng thái</TableCell>
+                            <TableCell>Trạng thái</TableCell> {/* Đã có lại */}
                             <TableCell>Ngày tạo</TableCell>
-                            <TableCell>Hành động</TableCell>
+                            <TableCell align="center">Hành động</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {orders.map((order) => (
-                            <TableRow key={order.id}>
-                                <TableCell>{order.membership_plans?.name || 'N/A'}</TableCell>
+                            <TableRow key={order.id} hover>
+                                <TableCell>{order.membership_plans?.name || 'Sản phẩm đã bị xóa'}</TableCell>
                                 <TableCell>{order.profiles?.email || 'Khách vãng lai'}</TableCell>
                                 <TableCell align="right">{formatCurrency(order.total_price)}</TableCell>
+                                
+                                {/* DÒNG BỊ THIẾU ĐÃ ĐƯỢC BỔ SUNG LẠI */}
                                 <TableCell>{getStatusChip(order.status)}</TableCell>
+                                
                                 <TableCell>{formatDateTime(order.created_at)}</TableCell>
-                                <TableCell>
+                                <TableCell align="center">
                                     <IconButton size="small" onClick={() => handleOpenModal(order)}>
                                         <EditIcon />
                                     </IconButton>
@@ -101,6 +104,7 @@ export default function Orders() {
                     </TableBody>
                 </Table>
             </TableContainer>
+
 
             {/* --- MODAL CHỈNH SỬA --- */}
             <Modal open={isModalOpen} onClose={handleCloseModal}>
