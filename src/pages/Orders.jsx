@@ -24,7 +24,7 @@ export default function Orders() {
                         created_at,
                         total_price, 
                         status,
-                        profiles:user_id ( email ), // <--- SỬA LỖI Ở ĐÂY
+                        profiles:user_id ( email ), 
                         membership_plans ( name ) 
                     `)
                     .order('created_at', { ascending: false });
