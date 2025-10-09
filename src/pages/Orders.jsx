@@ -25,7 +25,7 @@ export default function Orders() {
                         discount,
                         status,
                         user_id,
-                        products ( name ),
+                        membership_plans ( name ),
                         profiles ( email )
                     `)
                     .order('created_at', { ascending: false });
