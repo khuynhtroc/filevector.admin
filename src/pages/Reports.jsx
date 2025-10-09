@@ -8,7 +8,8 @@ import {
     Card,
     CardContent,
     CircularProgress,
-    Alert
+    Alert,
+    Paper
 } from '@mui/material';
 import {
     LineChart,
