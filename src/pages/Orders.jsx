@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
-// Đảm bảo đường dẫn đến supabaseClient là chính xác
 import { supabase } from '../supabaseClient'; 
 
-// Import các component từ MUI
 import {
     Typography, Box, CircularProgress, Alert,
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip
@@ -16,8 +14,9 @@ export default function Orders() {
     useEffect(() => {
         async function fetchOrders() {
             try {
-                // Sửa lỗi 1: Truy vấn đến đúng bảng `membership_plans`
-                // Sửa lỗi 2: Lấy đúng cột `total_price` thay vì `amount`
+                // *** SỬA LỖI QUAN TRỌNG NHẤT ***
+                // Chỉ định rõ ràng mối quan hệ: profiles!user_id
+                // Điều này nói cho Supabase: "Hãy join với bảng 'profiles' thông qua cột 'user_id' của bảng 'orders'"
                 const { data, error: fetchError } = await supabase
                     .from('orders')
                     .select(`
@@ -25,7 +24,7 @@ export default function Orders() {
                         created_at,
                         total_price, 
                         status,
-                        profiles ( email ),
+                        profiles:user_id ( email ), // <--- SỬA LỖI Ở ĐÂY
                         membership_plans ( name ) 
                     `)
                     .order('created_at', { ascending: false });
@@ -35,7 +34,6 @@ export default function Orders() {
                 }
                 setOrders(data || []);
             } catch (err) {
-                // Hiển thị thông báo lỗi thân thiện hơn
                 setError('Không thể tải danh sách đơn hàng. Lỗi: ' + err.message);
             } finally {
                 setLoading(false);
@@ -48,15 +46,9 @@ export default function Orders() {
 
     const getStatusChip = (status) => {
         switch (status) {
-            case 'completed':
-                return <Chip label="Hoàn thành" color="success" size="small" />;
-            case 'pending':
-                return <Chip label="Chờ xử lý" color="warning" size="small" />;
-            case 'failed':
-            case 'cancelled':
-                return <Chip label="Thất bại" color="error" size="small" />;
-            default:
-                return <Chip label={status || 'Không rõ'} size="small" />;
+            case 'completed': return <Chip label="Hoàn thành" color="success" size="small" />;
+            case 'pending': return <Chip label="Chờ xử lý" color="warning" size="small" />;
+            default: return <Chip label={status || 'Không rõ'} size="small" />;
         }
     };
 
@@ -83,10 +75,12 @@ export default function Orders() {
                         {orders.map((order) => (
                             <TableRow key={order.id} hover>
                                 <TableCell component="th" scope="row">
-                                    {/* Sửa lỗi 3: Hiển thị tên gói VIP từ `membership_plans` */}
                                     {order.membership_plans?.name || 'Sản phẩm không xác định'}
                                 </TableCell>
-                                <TableCell>{order.profiles?.email || 'Khách vãng lai'}</TableCell>
+                                <TableCell>
+                                    {/* Sửa lại cách truy cập email sau khi đã chỉ định rõ quan hệ */}
+                                    {order.profiles?.email || 'Khách vãng lai'}
+                                </TableCell>
                                 <TableCell align="right">{formatCurrency(order.total_price)}</TableCell>
                                 <TableCell>{getStatusChip(order.status)}</TableCell>
                                 <TableCell>{new Date(order.created_at).toLocaleString('vi-VN')}</TableCell>
