@@ -66,19 +66,15 @@ export default function Orders() {
     async function fetchOrders() {
         setLoading(true);
         try {
-            // Câu lệnh truy vấn để lấy tất cả các cột từ 'orders'
-            // và join với các bảng liên quan để lấy thêm thông tin
+            // === ĐOẠN SỬA LỖI QUAN TRỌNG NHẤT ===
+            // Chỉ định rõ ràng tên khóa ngoại để Supabase không bị nhầm lẫn
             const { data, error: fetchError } = await supabase
                 .from('orders')
                 .select(`
-                    id,
-                    created_at,
-                    total_price,
-                    status,
-                    discount,
-                    discount_code,
-                    membership_plans ( name ), 
-                    profiles ( username, email ) 
+                    id, created_at, total_price, status, discount, discount_code,
+                    profiles ( username, email ),
+                    product:products!orders_product_id_fkey ( name ),
+                    plan:membership_plans!orders_plan_id_fkey ( name )
                 `)
                 .order('created_at', { ascending: false });
 
@@ -190,7 +186,8 @@ export default function Orders() {
                                 <TableCell>#{order.id}</TableCell>
                                 <TableCell>{order.profiles?.username || 'N/A'}</TableCell>
                                 <TableCell>{order.profiles?.email || 'Khách vãng lai'}</TableCell>
-                                <TableCell>{order.membership_plans?.name || 'N/A'}</TableCell>
+                                {/* Sửa lại để lấy tên sản phẩm/gói VIP từ bí danh mới */}
+                                <TableCell>{order.product?.name || order.plan?.name || 'N/A'}</TableCell>
                                 <TableCell align="right">{formatCurrency(order.total_price)}</TableCell>
                                 <TableCell>{getStatusChip(order.status)}</TableCell>
                                 <TableCell>{formatDateTime(order.created_at)}</TableCell>

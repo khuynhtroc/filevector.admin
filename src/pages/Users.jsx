@@ -13,49 +13,50 @@ export default function Users() {
 
     useEffect(() => {
         async function fetchUsersWithOrderData() {
+            setLoading(true);
             try {
-                // Bước 1: Lấy tất cả user từ bảng profiles
-                const { data: profilesData, error: profilesError } = await supabase
+                // === ĐOẠN SỬA LỖI QUAN TRỌNG NHẤT ===
+                // Dùng câu lệnh select lồng nhau để Supabase tự join và tính toán
+                // Đồng thời chỉ định rõ khóa ngoại để không bị lỗi
+                const { data, error: fetchError } = await supabase
                     .from('profiles')
-                    .select('*')
+                    .select(`
+                        id,
+                        created_at,
+                        email,
+                        full_name,
+                        role,
+                        orders (
+                            total_price,
+                            status,
+                            plan:membership_plans!orders_plan_id_fkey ( name )
+                        )
+                    `)
                     .order('created_at', { ascending: false });
-                
-                if (profilesError) throw profilesError;
 
-                // Bước 2: Lấy tất cả đơn hàng để xử lý
-                const { data: ordersData, error: ordersError } = await supabase
-                    .from('orders')
-                    .select('user_id, total_price, status, membership_plans ( name )');
+                if (fetchError) {
+                    throw fetchError;
+                }
 
-                if (ordersError) throw ordersError;
-
-                // Bước 3: Xử lý và kết hợp dữ liệu bằng Javascript
-                const usersWithStats = profilesData.map(profile => {
-                    // Lọc ra các đơn hàng của user này
-                    const userOrders = ordersData.filter(order => order.user_id === profile.id);
+                // Xử lý dữ liệu trả về ngay trên client
+                const processedUsers = (data || []).map(user => {
+                    const totalSpent = user.orders.reduce((sum, order) => sum + order.total_price, 0);
+                    const activeVipOrders = user.orders.filter(order => order.status === 'completed' && order.plan);
                     
-                    // Lọc ra các đơn hàng VIP đã hoàn thành
-                    const activeVipOrders = userOrders.filter(order => order.status === 'completed');
-                    
-                    // Tính tổng tiền đã chi tiêu
-                    const totalSpent = userOrders.reduce((sum, order) => sum + order.total_price, 0);
-
-                    // Tìm tên gói VIP đang hoạt động (lấy gói mới nhất)
-                    let activePlanName = 'Chưa có';
-                    if (activeVipOrders.length > 0) {
-                        // Giả sử gói mới nhất là gói đang hoạt động
-                        activePlanName = activeVipOrders[0].membership_plans?.name || 'Gói không tên';
-                    }
+                    // Lấy tên của gói VIP mới nhất đã hoàn thành
+                    const activePlanName = activeVipOrders.length > 0 
+                        ? activeVipOrders[activeVipOrders.length - 1].plan.name 
+                        : 'Chưa có';
 
                     return {
-                        ...profile, // Giữ lại toàn bộ thông tin gốc của profile
-                        order_count: userOrders.length, // Tổng số đơn hàng đã tạo
-                        total_spent: totalSpent, // Tổng tiền đã chi
-                        active_plan: activePlanName, // Tên gói VIP
+                        ...user,
+                        order_count: user.orders.length,
+                        total_spent: totalSpent,
+                        active_plan: activePlanName,
                     };
                 });
 
-                setUsers(usersWithStats);
+                setUsers(processedUsers);
 
             } catch (err) {
                 setError('Không thể tải danh sách người dùng. Lỗi: ' + err.message);
